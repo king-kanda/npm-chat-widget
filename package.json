@@ -1,0 +1,26 @@
+{
+  "name": "chat-widget",
+  "version": "1.0.0",
+  "description": "A framework-agnostic chat widget that can be easily integrated into any website",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.4"
+  },
+  "keywords": [
+    "chat",
+    "widget",
+    "javascript",
+    "typescript",
+    "messaging"
+  ],
+  "author": "",
+  "license": "MIT"
+}
