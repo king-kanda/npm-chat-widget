@@ -32,7 +32,7 @@ var ChatWidget = /** @class */ (function () {
         header.querySelector('button').onclick = function () { return _this.toggleChat(); };
         // Create messages container
         var messagesContainer = document.createElement('div');
-        messagesContainer.style.cssText = "\n      flex: 1;\n      padding: 16px;\n      overflow-y: auto;\n      background: #f5f5f5;\n    ";
+        messagesContainer.style.cssText = "\n      max-width: 90%;\n      flex: 1;\n      padding: 16px;\n      overflow-y: auto;\n      background: #f5f5f5;\n      display: flex;\n      flex-direction: column;\n    ";
         // Create input container
         var inputContainer = document.createElement('div');
         inputContainer.style.cssText = "\n      padding: 16px;\n      background: white;\n      border-top: 1px solid #e0e0e0;\n      display: flex;\n      gap: 8px;\n    ";
@@ -77,7 +77,7 @@ var ChatWidget = /** @class */ (function () {
         this.messages.push({ text: text, isUser: isUser });
         var messagesContainer = this.container.querySelector('div > div:nth-child(2)');
         var messageElement = document.createElement('div');
-        messageElement.style.cssText = "\n      max-width: 80%;\n      padding: 8px 12px;\n      border-radius: 12px;\n      margin-bottom: 8px;\n      background: ".concat(isUser ? '#1976d2' : '#e0e0e0', ";\n      color: ").concat(isUser ? 'white' : 'black', ";\n      align-self: ").concat(isUser ? 'flex-end' : 'flex-start', ";\n    ");
+        messageElement.style.cssText = "\n      max-width: 75%;\n      padding: 8px 12px;\n      border-radius: 12px;\n      margin-bottom: 8px;\n      word-break: break-word;\n      white-space: pre-wrap;\n      background: ".concat(isUser ? '#1976d2' : '#e0e0e0', ";\n      color: ").concat(isUser ? 'white' : 'black', ";\n      align-self: ").concat(isUser ? 'flex-end' : 'flex-start', ";\n    ");
         messageElement.textContent = text;
         messagesContainer.appendChild(messageElement);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;

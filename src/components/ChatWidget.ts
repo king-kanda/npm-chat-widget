@@ -83,10 +83,13 @@ class ChatWidget {
     // Create messages container
     const messagesContainer = document.createElement('div');
     messagesContainer.style.cssText = `
+      max-width: 100%;
       flex: 1;
       padding: 16px;
       overflow-y: auto;
       background: #f5f5f5;
+      display: flex;
+      flex-direction: column;
     `;
 
     // Create input container
@@ -107,6 +110,7 @@ class ChatWidget {
       padding: 8px;
       border: 1px solid #e0e0e0;
       border-radius: 4px;
+      color:#000000;
       outline: none;
     `;
 
@@ -170,10 +174,12 @@ class ChatWidget {
     const messagesContainer = this.container.querySelector('div > div:nth-child(2)')!;
     const messageElement = document.createElement('div');
     messageElement.style.cssText = `
-      max-width: 80%;
+      max-width: 75%;
       padding: 8px 12px;
       border-radius: 12px;
       margin-bottom: 8px;
+      word-break: break-word;
+      white-space: pre-wrap;
       background: ${isUser ? '#1976d2' : '#e0e0e0'};
       color: ${isUser ? 'white' : 'black'};
       align-self: ${isUser ? 'flex-end' : 'flex-start'};

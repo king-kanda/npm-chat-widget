@@ -5,12 +5,10 @@ A framework-agnostic chat widget that can be easily integrated into any website.
 ## Installation
 
 ```bash
-npm install chat-widget
-# or
-yarn add chat-widget
+npm install okanda-chat-widget
 ```
 
-## Usage
+## Usage (Support for React,Vue  and Angular will be introduced in a week)
 
 ```html
 <!-- Add this to your HTML file -->
@@ -72,6 +70,7 @@ npm run dev
 npm run build
 ```
 
-## License
+## License & Contribution
 
 MIT 
+
