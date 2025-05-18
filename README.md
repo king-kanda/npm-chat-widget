@@ -27,7 +27,8 @@ const chatWidget = new ChatWidget({
     setTimeout(() => {
       chatWidget.addBotMessage('Thanks for your message!');
     }, 1000);
-  }
+  },
+  botAvatar : "image/url";
 });
 ```
 

@@ -8,6 +8,7 @@
     "dist"
   ],
   "scripts": {
+    "yalc:publish": "npm run build && yalc publish",
     "build": "tsc",
     "prepare": "npm run build"
   },
