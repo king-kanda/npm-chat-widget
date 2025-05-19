@@ -160,6 +160,8 @@ class ChatWidget {
       </div>
       <a href="#" style="color: #999; text-decoration: none;">Privacy Policy</a>
     `;
+        // store all this in a db and that addMessage ( since add message handles an array of messages )  
+        // add bot message basically calls add message with isUser = false
         const handleSendMessage = async () => {
             const message = input.value.trim();
             if (message) {
@@ -171,14 +173,13 @@ class ChatWidget {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            messages: [
-                                { role: 'user', content: message }
-                            ],
-                            model: 'llama3-70b-8192'
+                            session_id: "suizhzshis",
+                            message: message
                         }),
                     });
                     const data = await response.json();
                     console.log('Response from FastAPI:', data);
+                    input.value = '';
                     this.addBotMessage(data.response);
                 }
                 catch (error) {
@@ -203,6 +204,31 @@ class ChatWidget {
         this.container.appendChild(this.chatBox);
         this.container.appendChild(this.button);
         document.body.appendChild(this.container);
+        // load existing messages from backend
+        const loadMessages = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/chat/suizhzshis', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                const data = await response.json();
+                console.log('Response from FastAPI:', data);
+                data.messages.forEach((message) => {
+                    if (message.role === 'user') {
+                        this.addMessage(message.content, true);
+                    }
+                    else {
+                        this.addMessage(message.content, false);
+                    }
+                });
+            }
+            catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        };
+        loadMessages();
         // Add initial bot message
         setTimeout(() => {
             this.addBotMessage("Hello! How can I assist you today?");

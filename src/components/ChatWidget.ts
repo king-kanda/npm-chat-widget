@@ -195,6 +195,7 @@ class ChatWidget {
       const message = input.value.trim();
       if (message) {
         this.addMessage(message, true);
+        input.value = '';
         try {
           const response = await fetch('http://localhost:8000/chat', {
             method: 'POST',
@@ -202,15 +203,14 @@ class ChatWidget {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              messages: [
-                { role: 'user', content: message }
-              ],
-              model: 'llama3-70b-8192'
+              session_id: "suizhzshis",
+              message:  message
             }),
           });
 
           const data = await response.json();
           console.log('Response from FastAPI:', data);
+          input.value = '';
           this.addBotMessage(data.response);
         } catch (error) {
           console.error('Error sending message:', error);
@@ -242,6 +242,32 @@ class ChatWidget {
     this.container.appendChild(this.button);
 
     document.body.appendChild(this.container);
+    
+    // load existing messages from backend
+    const loadMessages = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/chat/suizhzshis', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const data = await response.json();
+        console.log('Response from FastAPI:', data);
+        data.messages.forEach((message: { content: string; role: string }) => {
+          if (message.role === 'user') {
+            this.addMessage(message.content, true);
+          }else {
+            this.addMessage(message.content, false);
+          }
+         
+        });
+      } catch (error) {
+        console.error('Error loading messages:', error);
+      }
+    };
+
+    loadMessages();
     
     // Add initial bot message
     setTimeout(() => {
