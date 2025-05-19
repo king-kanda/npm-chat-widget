@@ -1,6 +1,5 @@
 interface ChatWidgetOptions {
   title?: string;
-  onSendMessage?: (message: string) => void;
   botAvatar?: string; // URL to bot avatar image
 }
 
@@ -18,7 +17,6 @@ class ChatWidget {
   constructor(options: ChatWidgetOptions = {}) {
     this.options = {
       title: options.title || 'Chat with us',
-      onSendMessage: options.onSendMessage,
       botAvatar: options.botAvatar || this.getDefaultBotAvatar()
     };
     this.container = document.createElement('div');
@@ -184,18 +182,41 @@ class ChatWidget {
     `;
     footer.innerHTML = `
       <div style="display: flex; align-items: center; gap: 4px;">
-        Powered by <span style="font-weight: 600;">NexusWave AI</span>
+        Powered by <span style="font-weight: 500;">NexusWave AI</span>
       </div>
       <a href="#" style="color: #999; text-decoration: none;">Privacy Policy</a>
     `;
 
-    const handleSendMessage = () => {
+
+    // store all this in a db and that addMessage ( since add message handles an array of messages )  
+    // add bot message basically calls add message with isUser = false
+    
+    const handleSendMessage = async() => {
       const message = input.value.trim();
       if (message) {
         this.addMessage(message, true);
-        if (this.options.onSendMessage) {
-          this.options.onSendMessage(message);
+        try {
+          const response = await fetch('http://localhost:8000/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messages: [
+                { role: 'user', content: message }
+              ],
+              model: 'llama3-70b-8192'
+            }),
+          });
+
+          const data = await response.json();
+          console.log('Response from FastAPI:', data);
+          this.addBotMessage(data.response);
+        } catch (error) {
+          console.error('Error sending message:', error);
+          this.addBotMessage("Sorry, something went wrong. Please try again.");
         }
+
         input.value = '';
       }
     };

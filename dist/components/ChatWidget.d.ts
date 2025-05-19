@@ -1,6 +1,5 @@
 interface ChatWidgetOptions {
     title?: string;
-    onSendMessage?: (message: string) => void;
     botAvatar?: string;
 }
 declare class ChatWidget {
