@@ -10,6 +10,7 @@ declare class ChatWidget {
     private button;
     private chatBox;
     private messagesContainer;
+    private renderedMessageIds;
     constructor(options?: ChatWidgetOptions);
     private getDefaultBotAvatar;
     private init;

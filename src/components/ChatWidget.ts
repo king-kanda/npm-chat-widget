@@ -1,6 +1,7 @@
 interface ChatWidgetOptions {
   title?: string;
   botAvatar?: string; // URL to bot avatar image
+  appToken?: string; // Optional app token for authentication,
 }
 
 class ChatWidget {
@@ -11,34 +12,34 @@ class ChatWidget {
   private button: HTMLButtonElement;
   private chatBox: HTMLDivElement;
   private messagesContainer!: HTMLDivElement;
-
-  
+  private renderedMessageIds = new Set<string>();
 
   constructor(options: ChatWidgetOptions = {}) {
     this.options = {
-      title: options.title || 'Chat with us',
-      botAvatar: options.botAvatar || this.getDefaultBotAvatar()
+      title: options.title || "Chat with us",
+      botAvatar: options.botAvatar || this.getDefaultBotAvatar(),
+      appToken: options.appToken || "eee",
     };
-    this.container = document.createElement('div');
-    this.button = document.createElement('button');
-    this.chatBox = document.createElement('div');
+    this.container = document.createElement("div");
+    this.button = document.createElement("button");
+    this.chatBox = document.createElement("div");
     this.init();
   }
 
   private getDefaultBotAvatar(): string {
-    return 'https://img.freepik.com/free-psd/futuristic-robot-waiter-serves-cup-coffee-tray-showcasing-advanced-technology-robotic-service_632498-29036.jpg?uid=R25120111&ga=GA1.1.771649099.1742823816&semt=ais_hybrid&w=740';
+    return "https://img.freepik.com/free-psd/futuristic-robot-waiter-serves-cup-coffee-tray-showcasing-advanced-technology-robotic-service_632498-29036.jpg?uid=R25120111&ga=GA1.1.771649099.1742823816&semt=ais_hybrid&w=740";
   }
 
   private init() {
     // Create widget container
-    this.container.style.position = 'fixed';
-    this.container.style.bottom = '20px';
-    this.container.style.right = '20px';
-    this.container.style.zIndex = '1000';
+    this.container.style.position = "fixed";
+    this.container.style.bottom = "20px";
+    this.container.style.right = "20px";
+    this.container.style.zIndex = "1000";
 
     // Create chat button with initial icon
     this.updateButtonIcon();
-    
+
     this.button.style.cssText = `
       width: 50px;
       height: 50px;
@@ -70,7 +71,7 @@ class ChatWidget {
     `;
 
     // Create header
-    const header = document.createElement('div');
+    const header = document.createElement("div");
     header.style.cssText = `
       padding: 12px 16px;
       background: #6452df;
@@ -79,12 +80,14 @@ class ChatWidget {
       justify-content: space-between;
       align-items: center;
     `;
-    
+
     // Create navigation buttons like in the reference
     header.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 0 8px;">
         <div>
-          <div style="font-weight: 600; font-size: 14px;">${this.options.title || 'Assistant'}</div>
+          <div style="font-weight: 600; font-size: 14px;">${
+            this.options.title || "Assistant"
+          }</div>
           <div style="font-size: 12px; opacity: 0.8;">online</div>
         </div>
         <button style="background: none; border: none; cursor: pointer; padding: 4px;">
@@ -98,15 +101,19 @@ class ChatWidget {
 
       
     `;
-    
+
     // Set click handlers for both buttons to toggle chat
-    const backButton = header.querySelector('button:first-child') as HTMLButtonElement | null;
-    const minimizeButton = header.querySelector('button:last-child') as HTMLButtonElement | null;
+    const backButton = header.querySelector(
+      "button:first-child"
+    ) as HTMLButtonElement | null;
+    const minimizeButton = header.querySelector(
+      "button:last-child"
+    ) as HTMLButtonElement | null;
     if (backButton) backButton.onclick = () => this.toggleChat();
     if (minimizeButton) minimizeButton.onclick = () => this.toggleChat();
 
     // Create messages container
-    const messagesContainer = document.createElement('div');
+    const messagesContainer = document.createElement("div");
     messagesContainer.style.cssText = `
       flex: 1;
       overflow-y: auto;
@@ -121,7 +128,7 @@ class ChatWidget {
     this.messagesContainer = messagesContainer;
 
     // Create input container
-    const inputContainer = document.createElement('div');
+    const inputContainer = document.createElement("div");
     inputContainer.style.cssText = `
       position: sticky;
       bottom: 0;
@@ -134,9 +141,9 @@ class ChatWidget {
       z-index: 1;
     `;
 
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = 'Type your message...';
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Type your message...";
     input.style.cssText = `
       flex: 1;
       padding: 8px 12px;
@@ -147,9 +154,8 @@ class ChatWidget {
       font-size: 14px;
     `;
 
-
     // Create send button
-    const sendButton = document.createElement('button');
+    const sendButton = document.createElement("button");
     sendButton.innerHTML = `
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -169,7 +175,7 @@ class ChatWidget {
     `;
 
     // Create footer
-    const footer = document.createElement('div');
+    const footer = document.createElement("div");
     footer.style.cssText = `
       padding: 8px 16px;
       background: white;
@@ -187,42 +193,49 @@ class ChatWidget {
       <a href="#" style="color: #999; text-decoration: none;">Privacy Policy</a>
     `;
 
-
-    // store all this in a db and that addMessage ( since add message handles an array of messages )  
+    // store all this in a db and that addMessage ( since add message handles an array of messages )
     // add bot message basically calls add message with isUser = false
-    
-    const handleSendMessage = async() => {
+
+    const handleSendMessage = async () => {
       const message = input.value.trim();
       if (message) {
         this.addMessage(message, true);
-        input.value = '';
+        input.disabled = true;
+        sendButton.disabled = true;
         try {
-          const response = await fetch('http://localhost:8000/chat', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              session_id: "suizhzshis",
-              message:  message
-            }),
-          });
+          const response = await fetch(
+            "http://localhost:8082/widget/incoming",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${this.options.appToken}`,
+              },
+              body: JSON.stringify({
+                session_id: "suizhzshis",
+                message: message,
+              }),
+            }
+          );
 
           const data = await response.json();
-          console.log('Response from FastAPI:', data);
-          input.value = '';
-          this.addBotMessage(data.response);
+          console.log("Response from FastAPI:", data);
+          input.value = "";
+          // this.addBotMessage(data.response);
         } catch (error) {
-          console.error('Error sending message:', error);
+          console.error("Error sending message:", error);
           this.addBotMessage("Sorry, something went wrong. Please try again.");
+        } finally {
+          input.disabled = false;
+          sendButton.disabled = false;
+          input.value = "";
+          input.focus();
         }
-
-        input.value = '';
       }
     };
 
     input.onkeypress = (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === "Enter") {
         handleSendMessage();
       }
     };
@@ -231,52 +244,140 @@ class ChatWidget {
 
     inputContainer.appendChild(input);
     inputContainer.appendChild(sendButton);
-    
+
     this.chatBox.appendChild(header);
     this.chatBox.appendChild(this.messagesContainer);
     this.chatBox.appendChild(inputContainer);
     this.chatBox.appendChild(footer);
-    
-  
+
     this.container.appendChild(this.chatBox);
     this.container.appendChild(this.button);
 
     document.body.appendChild(this.container);
-    
+
     // load existing messages from backend
     const loadMessages = async () => {
       try {
-        const response = await fetch('http://localhost:8000/chat/suizhzshis', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        const data = await response.json();
-        console.log('Response from FastAPI:', data);
-        data.messages.forEach((message: { content: string; role: string }) => {
-          if (message.role === 'user') {
-            this.addMessage(message.content, true);
-          }else {
-            this.addMessage(message.content, false);
+        const response = await fetch(
+          "http://localhost:8082/widget/getmessages/suizhzshis",
+          {
+            method: "GET",
+             headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${this.options.appToken}`,
+              },
           }
-         
-        });
+        );
+        const data = await response.json();
+
+        console.log("Response from FastAPI:", data);
+
+        if (
+          Array.isArray(data) &&
+          data.length > 0 &&
+          Array.isArray(data[0].messages)
+        ) {
+          // Display messages
+
+          const sortedMessages = data[0].messages.sort(
+            (a: any, b: any) => a.dateTime - b.dateTime
+          );
+
+          sortedMessages.forEach(
+            (message: {
+              id: string;
+              user_message: string;
+              ai_message: string;
+              agent_message: string;
+            }) => {
+              if (message.user_message) {
+                this.addMessage(
+                  message.user_message,
+                  true,
+                  message.id + "_user"
+                );
+              }
+              if (message.ai_message) {
+                this.addMessage(message.ai_message, false, message.id + "_ai");
+              }
+              if (message.agent_message) {
+                this.addMessage(
+                  message.agent_message,
+                  false,
+                  message.id + "_agent"
+                );
+              }
+            }
+          );
+        } else {
+          console.error("Invalid response structure:", data);
+        }
       } catch (error) {
-        console.error('Error loading messages:', error);
+        console.error("Error loading messages:", error);
       }
     };
 
     loadMessages();
-    
-    // Add initial bot message
-    setTimeout(() => {
-      this.addBotMessage("Hello! How can I assist you today?");
-    }, 500);
+
+    // Polling for new messages
+    setInterval(async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:8082/widget/getmessages/suizhzshis"
+        );
+        const data = await response.json();
+
+        if (
+          Array.isArray(data) &&
+          data.length > 0 &&
+          Array.isArray(data[0].messages)
+        ) {
+          const sortedMessages = data[0].messages.sort(
+            (a: any, b: any) => a.dateTime - b.dateTime
+          );
+
+          sortedMessages.forEach(
+            (message: {
+              user_message: string;
+              ai_message: string;
+              agent_message: string;
+              id: string;
+            }) => {
+              if (message.user_message) {
+                this.addMessage(
+                  message.user_message,
+                  true,
+                  message.id + "_user"
+                );
+              }
+              if (message.ai_message) {
+                this.addMessage(message.ai_message, false, message.id + "_ai");
+              }
+              if (message.agent_message) {
+                this.addMessage(
+                  message.agent_message,
+                  false,
+                  message.id + "_agent"
+                );
+              }
+            }
+          );
+        }
+      } catch (error) {
+        console.error("Polling error:", error);
+      }
+    }, 3000);
+
+    if (this.messages.length === 0) {
+      // Add initial bot message
+      setTimeout(() => {
+        this.addBotMessage("Hello! How can I assist you today?");
+      }, 500);
+    }
   }
 
   private updateButtonIcon() {
-    this.button.innerHTML = this.isOpen 
+    this.button.innerHTML = this.isOpen
       ? `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
             stroke="currentColor" strokeWidth="2" strokeLinecap="round"
             strokeLinejoin="round">
@@ -290,28 +391,32 @@ class ChatWidget {
 
   private toggleChat() {
     this.isOpen = !this.isOpen;
-    this.chatBox.style.display = this.isOpen ? 'flex' : 'none';
+    this.chatBox.style.display = this.isOpen ? "flex" : "none";
     this.updateButtonIcon();
   }
 
-private addMessage(text: string, isUser: boolean) {
-  this.messages.push({ text, isUser });
-  const messagesContainer = this.messagesContainer;
+  private addMessage(text: string, isUser: boolean, id?: string) {
+    const messageId = id || `temp-${Date.now()}-${Math.random()}`;
+    if (this.renderedMessageIds.has(messageId)) return;
+    this.renderedMessageIds.add(messageId);
 
-  
-  const messageWrapper = document.createElement('div');
-  messageWrapper.style.cssText = `
+    this.messages.push({ text, isUser });
+    const messagesContainer = this.messagesContainer;
+
+    const messageWrapper = document.createElement("div");
+    messageWrapper.style.cssText = `
     display: flex;
-    flex-direction: ${isUser ? 'row-reverse' : 'row'};
+    flex-direction: ${isUser ? "row-reverse" : "row"};
     gap: 8px;
     align-items: flex-start;
     max-width: 100%;
+
   `;
 
-  // Only create avatar for bot messages
-  if (!isUser) {
-    const avatar = document.createElement('div');
-    avatar.style.cssText = `
+    // Only create avatar for bot messages
+    if (!isUser) {
+      const avatar = document.createElement("div");
+      avatar.style.cssText = `
       width: 32px;
       height: 32px;
       border-radius: 50%;
@@ -323,60 +428,46 @@ private addMessage(text: string, isUser: boolean) {
       overflow: hidden;
     `;
 
-    const avatarImg = document.createElement('img');
-    avatarImg.src = this.options.botAvatar!;
-    avatarImg.style.cssText = `
+      const avatarImg = document.createElement("img");
+      avatarImg.src = this.options.botAvatar!;
+      avatarImg.style.cssText = `
       width: 100%;
       height: 100%;
       object-fit: cover;
     `;
-    avatar.appendChild(avatarImg);
-    messageWrapper.appendChild(avatar);
-  }
+      avatar.appendChild(avatarImg);
+      messageWrapper.appendChild(avatar);
+    }
 
-  const messageElement = document.createElement('div');
-  messageElement.style.cssText = `
+    const messageElement = document.createElement("div");
+    messageElement.style.cssText = `
     max-width: 100%;
     padding: 10px 14px;
     border-radius: 16px;
-    border-top-${isUser ? 'right' : 'left'}-radius: 4px;
+    border-top-${isUser ? "right" : "left"}-radius: 4px;
     word-break: break-word;
     white-space: pre-wrap;
     font-size: 14px;
-    background: ${isUser ? '#6452df' : '#f0f0f5'};
-    color: ${isUser ? 'white' : '#333'};
+    background: ${isUser ? "#6452df" : "#f0f0f5"};
+    color: ${isUser ? "white" : "#333"};
 
   `;
-  messageElement.textContent = text;
+    messageElement.textContent = text;
 
-  const timestamp = document.createElement('div');
-  timestamp.style.cssText = `
-    font-size: 10px;
-    color: #999;
-    margin-top: 4px;
-    text-align: ${isUser ? 'right' : 'left'};
-  `;
-  const now = new Date();
-  const hours = now.getHours().toString().padStart(2, '0');
-  const minutes = now.getMinutes().toString().padStart(2, '0');
-  timestamp.textContent = `${hours}:${minutes}`;
-
-  const messageContent = document.createElement('div');
-  messageContent.style.cssText = `
+    const messageContent = document.createElement("div");
+    messageContent.style.cssText = `
     display: flex;
     flex-direction: column;
   `;
-  messageContent.appendChild(messageElement);
-  messageContent.appendChild(timestamp);
+    messageContent.appendChild(messageElement);
 
-  messageWrapper.appendChild(messageContent);
-  messagesContainer.appendChild(messageWrapper);
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
+    messageWrapper.appendChild(messageContent);
+    messagesContainer.appendChild(messageWrapper);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
 
   public addBotMessage(text: string) {
-    this.addMessage(text, false);
+    this.addMessage(text, false, "0");
   }
 }
 
