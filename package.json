@@ -1,5 +1,5 @@
 {
-  "name": "okanda-chat-widget",
+  "name": "nexus-chat-widget",
   "version": "1.0.0",
   "description": "A framework-agnostic chat widget that can be easily integrated into any website",
   "main": "dist/index.js",

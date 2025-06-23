@@ -18,7 +18,7 @@ class ChatWidget {
     this.options = {
       title: options.title || "Chat with us",
       botAvatar: options.botAvatar || this.getDefaultBotAvatar(),
-      appToken: options.appToken || "eee",
+      appToken: options.appToken || "",
     };
     this.container = document.createElement("div");
     this.button = document.createElement("button");
@@ -322,8 +322,15 @@ class ChatWidget {
     // Polling for new messages
     setInterval(async () => {
       try {
-        const response = await fetch(
-          "http://localhost:8082/widget/getmessages/suizhzshis"
+         const response = await fetch(
+          "http://localhost:8082/widget/getmessages/suizhzshis",
+          {
+            method: "GET",
+             headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${this.options.appToken}`,
+              },
+          }
         );
         const data = await response.json();
 

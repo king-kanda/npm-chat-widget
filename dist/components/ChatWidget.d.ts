@@ -1,6 +1,8 @@
 interface ChatWidgetOptions {
     title?: string;
     botAvatar?: string;
+    appToken?: string;
+    session_id?: string;
 }
 declare class ChatWidget {
     private container;
